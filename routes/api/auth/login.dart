@@ -7,13 +7,16 @@ import '../../../utils/body_parse.dart';
 import '../../../utils/constants.dart';
 import '../../../utils/error.dart';
 
-/// Handles HTTP requests for user login.
+/// Handles HTTP requests for the user login route (`/api/auth/login`).
 ///
 /// This function processes a POST request, validates the provided email
 /// and password, and forwards the credentials to the login API. If the
-/// login is successful, it returns the response data; otherwise, an error response is returned.
+/// login is successful, it returns the response data; otherwise, it returns
+/// an error response.
 ///
-/// - [context]: Provides access to the HTTP request information.
+/// - Parameters:
+///   - [context]: Provides access to the HTTP request information.
+/// - Returns: A `Future<Response>` that represents the HTTP response.
 Future<Response> onRequest(RequestContext context) async {
   // Ensure the request method is POST.
   if (context.request.method != HttpMethod.post) {
@@ -56,7 +59,10 @@ Future<Response> onRequest(RequestContext context) async {
     }
 
     // Return an error response if login fails.
-    return errorResponse('Login failed. Please check your credentials.');
+    return errorResponse(
+      'Login failed. Please check your credentials.',
+      statusCode: response.statusCode,
+    );
   } catch (e) {
     // Handle any errors that occur during the login process.
     return errorResponse('An error occurred while logging in.', error: e);
@@ -65,7 +71,10 @@ Future<Response> onRequest(RequestContext context) async {
 
 /// Validates that the provided [email] and [password] are not null or empty.
 ///
-/// Returns true if both are valid; otherwise, returns false.
+/// - Parameters:
+///   - [email]: The email address to validate.
+///   - [password]: The password to validate.
+/// - Returns: `true` if both [email] and [password] are valid; otherwise, `false`.
 bool _validateCredentials(String? email, String? password) {
   return email != null &&
       password != null &&

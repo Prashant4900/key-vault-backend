@@ -7,25 +7,26 @@ import '../../../utils/body_parse.dart';
 import '../../../utils/constants.dart';
 import '../../../utils/error.dart';
 
-/// Handles HTTP requests for adding a new secret key.
+/// Handles HTTP POST requests for adding a new secret key (`/api/secret/add`).
 ///
-/// This function processes a POST request to add a new secret key along with a
-/// name. It validates the request body to ensure that the name and secret key
-/// are present and non-empty. If the request is valid, the data is sent to the
-/// backend service to store the secret key. If successful, it returns a success
-/// response, otherwise, an error response is returned.
+/// This function processes a POST request to add a new secret key along with
+/// a name. It validates the request body to ensure that the name, secret key,
+/// key, and salt are present and non-empty. If the request is valid, the data
+/// is sent to the backend service to store the secret key. If successful, it
+/// returns a success response; otherwise, an error response is returned.
 ///
-/// - [context]: Provides access to the HTTP request information.
+/// - Parameters:
+///   - [context]: Provides access to the HTTP request information.
+/// - Returns: A `Future<Response>` representing the HTTP response.
 Future<Response> onRequest(RequestContext context) async {
   // Ensure the request method is POST.
   if (context.request.method != HttpMethod.post) {
     return errorResponse('Invalid request method. Only POST is allowed.');
   }
 
-  // Retrieve the request header
-  final header = context.request.headers;
-
-  final authHeader = header['Authorization'];
+  // Retrieve the Authorization header.
+  final headers = context.request.headers;
+  final authHeader = headers['Authorization'];
   if (authHeader == null || authHeader.isEmpty) {
     return errorResponse(
       'Missing or invalid Authorization token.',
@@ -33,25 +34,23 @@ Future<Response> onRequest(RequestContext context) async {
     );
   }
 
-  // Retrieve the request body.
+  // Retrieve and parse the request body.
   final body = await context.request.body();
-
-  // Parse the request body as JSON and extract the parameters.
   final bodyParam = parseBody(body);
   final name = bodyParam['name'] as String?;
   final key = bodyParam['key'] as String?;
   final secretKey = bodyParam['secret_key'] as String?;
   final salt = bodyParam['salt'] as String?;
 
-  // Validate the presence and non-emptiness of name and secretKey.
+  // Validate the presence and non-emptiness of required fields.
   if (!_validateRequestBody(name, secretKey, key, salt)) {
-    return errorResponse('All field are required and cannot be empty.');
+    return errorResponse('All fields are required and cannot be empty.');
   }
 
   try {
     // Send a POST request to the backend to store the new secret key.
     final response = await http.post(
-      Uri.parse(Urls.BASE_URL + Urls.SECRET),
+      Uri.parse('${Urls.BASE_URL}${Urls.SECRET}'),
       headers: {
         'apikey': Constants.SUPABASE_ANON,
         'Authorization': authHeader,
@@ -64,7 +63,7 @@ Future<Response> onRequest(RequestContext context) async {
       }),
     );
 
-    // If adding the secret key was successful, return the API response.
+    // If adding the secret key was successful, return a success response.
     if (response.statusCode == 201) {
       return Response.json(
         body: {'message': 'Secret key added successfully'},
@@ -86,11 +85,17 @@ Future<Response> onRequest(RequestContext context) async {
   }
 }
 
-/// Validates that the provided [name] and [secretKey] are not null or empty.
+/// Validates that the provided fields are not null or empty.
 ///
-/// This function checks if both the name and secret key
+/// This function checks if the [name], [secretKey], [key], and [salt]
 /// are present and not empty.
-/// Returns true if both are valid, otherwise returns false.
+///
+/// - Parameters:
+///   - [name]: The name associated with the secret key.
+///   - [secretKey]: The secret key to be stored.
+///   - [key]: An additional key related to the secret key.
+///   - [salt]: The salt used for encryption or hashing.
+/// - Returns: `true` if all fields are valid, otherwise `false`.
 bool _validateRequestBody(
   String? name,
   String? secretKey,
@@ -101,8 +106,8 @@ bool _validateRequestBody(
       secretKey != null &&
       key != null &&
       salt != null &&
-      salt.isNotEmpty &&
       name.isNotEmpty &&
       secretKey.isNotEmpty &&
-      key.isNotEmpty;
+      key.isNotEmpty &&
+      salt.isNotEmpty;
 }

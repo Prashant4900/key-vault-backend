@@ -1,14 +1,15 @@
 import 'dart:convert';
 
-/// Parses a JWT token and returns the decoded payload as a Map<String, dynamic>.
+/// Parses a JWT token and returns the decoded payload as a `Map<String, dynamic>`.
 ///
-/// This function decodes the second part of the JWT (payload) from base64
-/// and converts it into a Dart Map. If the token is not valid, or if the payload
-/// cannot be decoded, it returns an empty map.
+/// This function decodes the second part of the JWT (payload) from Base64URL
+/// and converts it into a Dart map. If the token format is not valid, or if
+/// the payload cannot be decoded, it throws an exception.
 ///
-/// - [token]: The JWT token string.
-///
-/// Returns a Map<String, dynamic> containing the decoded payload.
+/// - Parameters:
+///   - [token]: The JWT token string to be parsed.
+/// - Returns: A `Map<String, dynamic>` containing the decoded payload data.
+/// - Throws: An `Exception` if the JWT token is invalid (does not consist of three parts).
 Map<String, dynamic> parseJwt(String token) {
   final parts = token.split('.');
   if (parts.length != 3) {
