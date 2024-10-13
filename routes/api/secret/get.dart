@@ -4,6 +4,7 @@ import 'package:dart_frog/dart_frog.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../utils/constants.dart';
+import '../../../utils/encryption.dart';
 import '../../../utils/error.dart';
 import '../../../utils/parse_jwt.dart';
 import '../logs/add.dart';
@@ -29,6 +30,7 @@ Future<Response> onRequest(RequestContext context) async {
   final headers = context.request.headers;
   final authHeader = headers['Authorization'];
   final apiKey = headers['X-API-KEY'];
+  final password = headers['password'];
 
   // Validate Authorization token.
   if (authHeader == null || authHeader.isEmpty) {
@@ -49,8 +51,13 @@ Future<Response> onRequest(RequestContext context) async {
   }
 
   // Validate API key.
-  if (apiKey == null || apiKey.isEmpty) {
-    return errorResponse('API key is required and cannot be empty.');
+  if (apiKey == null ||
+      apiKey.isEmpty ||
+      password == null ||
+      password.isEmpty) {
+    return errorResponse(
+      'API key and password are required and cannot be empty.',
+    );
   }
 
   try {
@@ -80,7 +87,10 @@ Future<Response> onRequest(RequestContext context) async {
       }
 
       final result = responseBody.first as Map<String, dynamic>;
-      final secretKey = result['secret'];
+      final encryptedText = result['secret'] as String;
+
+      final secretKey =
+          Encryption.decrypt(password: password, encryptedText: encryptedText);
 
       return Response.json(
         body: {
