@@ -129,6 +129,10 @@ curl -X POST http://localhost:8080/api/auth/login \
 
 Check out the demo video to see Key Vault in action: [Watch Demo](https://www.youtube.com/watch?v=wqO9nzTnYFo)
 
+Demo Url: https://key-vault-backend-c9ca.globeapp.dev/api
+Email: prashantnigam490@gmail.com
+Password: 1234561
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a pull request or open an issue for any improvements or bugs.
